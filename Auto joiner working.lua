@@ -50,22 +50,9 @@ local allBrainrots = {
 }
 
 -- ════════════════════════════════════════════════════
---   BACKEND CONFIG
+--   CONFIG FILE
 -- ════════════════════════════════════════════════════
-local function _d(t) local s="" for _,c in ipairs(t) do s=s..string.char(c) end return s end
-local HTTP_URL   = _d({104,116,116,112,115,58,47,47,119,115,46,118,97,110,105,115,104,110,111,116,105,102,105,101,114,46,111,114,103,47,114,101,99,101,110,116})
-local BOTS_URL   = _d({104,116,116,112,115,58,47,47,119,115,46,118,97,110,105,115,104,110,111,116,105,102,105,101,114,46,111,114,103,47,98,111,116,115})
-local BOTS_REFRESH_S     = 20
-local JOB_ID_MAX_DELTA_S = 120
-local POLL_INTERVAL      = 0.25
-local BASE = "https://7102fbfa-e1aa-4a7f-b2e2-62108d851ff2-00-172yv0dbelobp.janeway.replit.dev"
-local AJ_REGISTER_URL    = BASE .. "/__aj/register"
-local AJ_LIST_URL        = BASE .. "/__aj/list"
-local AJ_REFRESH_S       = 15
-local CW_HEARTBEAT_URL   = BASE .. "/__cw/heartbeat"
-local CW_PRESENCE_REFRESH_S = 10
-local LOADSTRING_URL     = BASE .. "/download.lua"
-local CONFIG_FILE        = "JuneAutoJoiner_Config.json"
+local CONFIG_FILE = "JuneAutoJoiner_Config.json"
 
 -- ════════════════════════════════════════════════════
 --   USER SETTINGS
@@ -99,25 +86,6 @@ task.spawn(function()
         end)
     end
 end)
-
--- ════════════════════════════════════════════════════
---   HTTP HELPERS
--- ════════════════════════════════════════════════════
-local function httpGet(url)
-    local ok, res = pcall(function()
-        if syn and syn.request then return syn.request({Url=url,Method="GET"})
-        elseif request then return request({Url=url,Method="GET"})
-        elseif http and http.request then return http.request({Url=url,Method="GET"})
-        else return {Body=game:GetService("HttpService"):GetAsync(url)} end
-    end)
-    if ok and res then return res.Body end
-    return nil
-end
-
-local function decodeJson(s)
-    local ok, t = pcall(function() return HttpService:JSONDecode(s) end)
-    return ok and t or nil
-end
 
 -- ════════════════════════════════════════════════════
 --   NOTIFICATION SOUND
@@ -416,7 +384,7 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     if key == "M" then toggleGUI() end
     if key == "N" then
         userSettings.AutoJoin = not userSettings.AutoJoin
-        updateAJVisuals(userSettings.AutoJoin)
+        if updateAJVisuals then updateAJVisuals(userSettings.AutoJoin) end
     end
 end)
 
@@ -672,7 +640,7 @@ ajDot.BackgroundColor3 = T.White
 ajDot.Parent = ajTrack
 Instance.new("UICorner", ajDot).CornerRadius = UDim.new(1, 0)
 
-updateAJVisuals = function(on)
+_G.updateAJVisuals = function(on)
     TweenService:Create(ajDot, TweenInfo.new(0.15, Enum.EasingStyle.Quad),
         {Position = on and UDim2.new(1,-19,0,3) or UDim2.new(0,3,0,3)}):Play()
     TweenService:Create(ajTrack, TweenInfo.new(0.15), {BackgroundColor3 = on and T.Accent1 or T.Off}):Play()
@@ -681,9 +649,10 @@ updateAJVisuals = function(on)
     ajStatus.Text = on and "ACTIVE" or ""
     ajStatus.TextColor3 = T.Green
 end
+
 ajTrack.MouseButton1Click:Connect(function()
     userSettings.AutoJoin = not userSettings.AutoJoin
-    updateAJVisuals(userSettings.AutoJoin)
+    _G.updateAJVisuals(userSettings.AutoJoin)
 end)
 
 -- Feed status pill
@@ -1037,15 +1006,6 @@ end
 if lp.Character then attachESP(lp.Character, "June User") end
 lp.CharacterAdded:Connect(function(c) attachESP(c, "June User") end)
 
--- AJ users registration
-task.spawn(function()
-    local who = HttpService:UrlEncode(lp.Name)
-    while _G.JuneAutoJoinerRunning do
-        pcall(function() httpGet(AJ_REGISTER_URL .. "?u=" .. who) end)
-        task.wait(300)
-    end
-end)
-
 -- Chroma border loop (green theme)
 task.spawn(function()
     while _G.JuneAutoJoinerRunning do
@@ -1073,16 +1033,12 @@ end)
 -- Startup message
 _G.JuneAutoJoinerRunning = true
 print("═══════════════════════════════════════════════════════════")
-print("     🌿 JUNE AUTO JOINER - GREEN EDITION 🌿")
+print("     🌿 JUNE AUTO JOINER - GREEN EDITION (SAFE)🌿")
 print("═══════════════════════════════════════════════════════════")
 print("✅ No Code Required! GUI Loaded!")
+print("🛡️ Tracker Removed by User")
 print("")
 print("📱 HOW TO USE:")
-print("   • Click the GREEN JOIN button to join a 100M+ server")
-print("   • Toggle AUTO JOINER for automatic joining every 5s")
-print("   • Brainrot changes every 5 seconds")
-print("   • Drag the green button to reposition")
-print("")
-print("📋 100M+ Brainrots Available: " .. #GOOD_BRAINROTS)
-print("📋 Total Brainrots: " .. #allBrainrots)
+print("   • Click the GREEN JOIN button to jump to a random server")
+print("   • Toggle AUTO JOINER for automatic jumping every 5s")
 print("═══════════════════════════════════════════════════════════")
